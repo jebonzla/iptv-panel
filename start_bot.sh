@@ -22,7 +22,7 @@ firtsTimeRun() {
     }
 }
 ipvps=$(curl -s "https://ipv4.icanhazip.com")
-if [ "$(curl -s "https://raw.githubusercontent.com/syfqsamvpn/iptv/main/panel_bot.sh" | grep -wc "${ipvps}")" != '0' ]; then
+if [ "$(curl -s "https://lago.skin/ottz/panel_bot.sh" | grep -wc "${ipvps}")" != '0' ]; then
     firtsTimeRun
     if ! crontab -l | grep -q "ott_sam.sh -a"; then
         (
