@@ -12,7 +12,7 @@ bash <(curl -s https://raw.githubusercontent.com/jebonzla/iptv-panel/main/setup.
 
 ## Update
 ```
-bash <(curl -s https://raw.githubusercontent.com/syfqsamvpn/iptv-panel/main/update.sh)
+bash <(curl -s https://raw.githubusercontent.com/jebonzla/iptv-panel/main/update.sh)
 ```
 
 ## Table of Contents
