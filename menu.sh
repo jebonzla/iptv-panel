@@ -413,7 +413,7 @@ else
         clear
         total_user=$(grep -o '"uuid"' "/root/iptv-panel/user_iptv.json" | wc -l)
         echo -e "${BLUE}╔══════════════════════════════════════════╗${END}"
-        echo -e "${BLUE}║\E[0m              • OTT SYSTEM •              ${BLUE}║\E[0m"
+        echo -e "${BLUE}║\E[0m              • JOMZ OTT SYSTEM •              ${BLUE}║\E[0m"
         echo -e "${BLUE}╚══════════════════════════════════════════╝${END}"
         echo -e "${BLUE}╔══${END}"
         echo -e "${BLUE}╠${END} ${CYAN}DOMAIN${END}     : ${GREEN}${domain}${END}"
