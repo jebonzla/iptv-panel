@@ -556,7 +556,7 @@ else
             ;;
         u | U)
             echo "Updating..."
-            bash <(curl -s https://raw.githubusercontent.com/syfqsamvpn/iptv-panel/main/update.sh)
+            bash <(curl -s https://raw.githubusercontent.com/jebonzla/iptv-panel/main/update.sh)
             run.sh
             echo "Done Update"
             ;;
