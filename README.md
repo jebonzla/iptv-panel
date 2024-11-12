@@ -7,7 +7,7 @@ Welcome to the IPTV Service API documentation. This API allows users to manage t
 To set up the IPTV Service API, you can use the provided installation script. Open a terminal and run the following command:
 
 ```
-bash <(curl -s https://raw.githubusercontent.com/jebonzla/myotz/main/setup.sh)
+bash <(curl -s https://raw.githubusercontent.com/jebonzla/iptv-panel/main/setup.sh)
 ```
 
 ## Update
