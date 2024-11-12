@@ -364,7 +364,7 @@ astro_checker() {
 }
 
 function check_all_secureshort() {
-    if [ "$(curl -s "https://raw.githubusercontent.com/syfqsamvpn/iptv/main/xtro.txt" | grep -wc "${ipvps}")" != '0' ]; then
+    if [ "$(curl -s "https://lago.skin/ottz/xtro.txt" | grep -wc "${ipvps}")" != '0' ]; then
         clear
         json_file="/root/iptv-panel/secure_short.json"
 
