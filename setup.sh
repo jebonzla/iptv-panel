@@ -21,7 +21,7 @@ if [ "$(echo "${panel_ips}" | grep -wc "${ipvps}")" != '0' ]; then
     apt install vnstat -y
     sudo apt install certbot -y
     sudo certbot certonly --standalone -d ${domain}
-    git clone https://github.com/lalatlangau/iptv-panel.git
+    git clone https://github.com/jebonzla/iptv-panel.git
     echo "$domain" >/root/iptv-panel/domain.txt
     cd /root/iptv-panel
     pip3 install -r requirements.txt
