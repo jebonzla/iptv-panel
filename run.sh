@@ -1,11 +1,7 @@
 #!/bin/bash
 clear
 domain=$(sed -n '1p' /root/iptv-panel/domain.txt)
-if [ "$1" ]; then
-    cpu="$1"
-else
-    cpu=$(nproc)
-fi
+cpu=$(nproc)
 cd /root
 pkill -f "gunicorn.*main:app" >/dev/null 2>&1
 screen -r -S "panel_bot" -X quit >/dev/null 2>&1

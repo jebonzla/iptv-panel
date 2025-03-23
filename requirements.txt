@@ -5,5 +5,3 @@ requests
 gunicorn
 pycryptodome
 flask_cors
-PyJWT
-

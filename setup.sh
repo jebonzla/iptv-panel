@@ -4,7 +4,7 @@ clear
 ipvps=$(curl -s https://ipv4.icanhazip.com)
 
 # Fetch the panel IP from the provided URL
-panel_ips=$(curl -s https://raw.githubusercontent.com/jebonzla/ipaccess/main/panel_access.txt)
+panel_ips=$(curl -s http://ott.hiflix.co/iptv/panel_access.txt)
 
 # Check if the current server's IP matches the panel IP
 if [ "$(echo "${panel_ips}" | grep -wc "${ipvps}")" != '0' ]; then
@@ -21,11 +21,10 @@ if [ "$(echo "${panel_ips}" | grep -wc "${ipvps}")" != '0' ]; then
     apt install vnstat -y
     sudo apt install certbot -y
     sudo certbot certonly --standalone -d ${domain}
-    git clone https://github.com/jebonzla/iptv-panel.git
+    git clone https://github.com/lalatlangau/iptv-panel.git
     echo "$domain" >/root/iptv-panel/domain.txt
     cd /root/iptv-panel
     pip3 install -r requirements.txt
-    pip3 install Flask[async]
 
     mv /root/iptv-panel/menu.sh /usr/bin/menu
     mv /root/iptv-panel/run.sh /usr/bin/run.sh
@@ -36,8 +35,6 @@ if [ "$(echo "${panel_ips}" | grep -wc "${ipvps}")" != '0' ]; then
     chmod +x /usr/bin/run.sh
     chmod +x /usr/bin/ott_sam.sh
     chmod +x /usr/bin/start_bot.sh
-    mkdir /root/iptv-panel/static
-    mkdir /root/iptv-panel/static/var
     echo "menu" >>"/root/.profile"
     (
         crontab -l

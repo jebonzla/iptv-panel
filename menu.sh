@@ -1,18 +1,9 @@
 #!/bin/bash
 
-ipvps=$(curl -s "https://ipv4.icanhazip.com")
 domain=$(sed -n '1p' /root/iptv-panel/domain.txt)
 API_BASE_URL="https://${domain}"
 admin_password=$(grep -o 'admin_pass = "[^"]*' "/root/iptv-panel/data.txt" | grep -o '[^"]*$' | sed -n '1p')
-OFFLINE_REDIRECT=$(grep -o 'OFFLINE_REDIRECT = "[^"]*' "/root/iptv-panel/data.txt" | grep -o '[^"]*$' | sed -n '1p')
 
-END="\033[0m"
-BLUE="\033[1;34m"
-GREEN="\033[1;92m"
-CYAN="\033[1;96m"
-BLACK="\033[1;90m"
-RED="\033[1;91m"
-B_YELLOW="\033[43m"
 function register_reseller() {
     read -p "Enter reseller username: " reseller_username
     read -p "Enter reseller balance: " reseller_balance
@@ -45,21 +36,8 @@ function add_user() {
             "package": "'"$package"'",
             "admin_password": "'"$admin_password"'"
         }')
-    date=$(echo "${response}" | grep -o '"expiration_date":"[^"]*' | grep -o '[^"]*$' | awk '{print $1}')
-    link=$(echo "${response}" | grep -o '"link":"[^"]*' | grep -o '[^"]*$')
-    username=$(echo "${response}" | grep -o '"username":"[^"]*' | grep -o '[^"]*$')
-    uuid=$(echo "${response}" | grep -o '"uuid":"[^"]*' | grep -o '[^"]*$')
-    template_file="/root/iptv-panel/add_template.txt"
-    template=$(<"$template_file")
-    template=$(echo "${template}" | sed 's/<code>//g; s/<\/code>//g')
-    template=$(echo "${template}" | sed "s|\${date}|${date}|g")
-    template=$(echo "${template}" | sed "s|\${link}|${link}|g")
-    template=$(echo "${template}" | sed "s|\${username}|${username}|g")
-    template=$(echo "${template}" | sed "s|\${uuid}|${uuid}|g")
-    msg="$template"
-    clear
-    echo "$msg"
-    echo ""
+
+    echo "$response" | jq -C .
 }
 
 function renew_user() {
@@ -77,19 +55,8 @@ function renew_user() {
             "uuid": "'"$user_uuid"'",
             "package": "'"$package"'"
         }')
-    date=$(echo "${response}" | grep -o '"new_expiration_date":"[^"]*' | grep -o '[^"]*$' | awk '{print $1}')
-    username=$(echo "${response}" | grep -o '"username":"[^"]*' | grep -o '[^"]*$')
-    uuid=$(echo "${response}" | grep -o '"uuid":"[^"]*' | grep -o '[^"]*$')
-    template_file="/root/iptv-panel/renew_template.txt"
-    template=$(<"$template_file")
-    template=$(echo "${template}" | sed 's/<code>//g; s/<\/code>//g')
-    template=$(echo "${template}" | sed "s|\${date}|${date}|g")
-    template=$(echo "${template}" | sed "s|\${username}|${username}|g")
-    template=$(echo "${template}" | sed "s|\${uuid}|${uuid}|g")
-    msg="$template"
-    clear
-    echo "$msg"
-    echo ""
+
+    echo "$response" | jq -C .
 }
 
 function add_reseller_balance() {
@@ -208,28 +175,8 @@ function unban_multi() {
     echo "$response" | jq -C .
 }
 
-function unban_sniffer() {
-    read -p "Enter UUID: " uuid
-
-    response=$(curl -s --request POST \
-        --url "$API_BASE_URL/api/unban_sniffer" \
-        --header 'Content-Type: application/json' \
-        --data '{
-            "admin_password": "'"$admin_password"'",
-            "uuid": "'"$uuid"'"
-        }')
-
-    echo "$response" | jq -C .
-}
-
 function get_all_resellers() {
     response=$(curl -s "$API_BASE_URL/api/get_all_resellers?password_input=$admin_password")
-
-    echo "$response" | jq -C .
-}
-
-function get_all_agents() {
-    response=$(curl -s "$API_BASE_URL/api/get_all_agents?password_input=$admin_password")
 
     echo "$response" | jq -C .
 }
@@ -249,9 +196,10 @@ function add_secure_url() {
     echo "$response" | jq -C .
 }
 
-req_edit_secureshort() {
-    short_id=$1
-    new_url=$2
+function edit_secure_url() {
+    read -p "Enter short ID to edit: " short_id
+    read -p "Enter new URL: " new_url
+
     response=$(curl -s --request POST \
         --url "$API_BASE_URL/secure_edit" \
         --header 'Content-Type: application/json' \
@@ -261,26 +209,6 @@ req_edit_secureshort() {
         }')
 
     echo "$response" | jq -C .
-}
-
-add_secure_vod() {
-    read -p "Enter VOD Link : " link
-
-    response=$(curl -s --request POST \
-        --url "$API_BASE_URL/vod/add" \
-        --header 'Content-Type: application/json' \
-        --data '{
-            "admin_pass": "'"$admin_password"'",
-            "url": "'"$link"'"
-        }')
-
-    echo "$response" | jq -C .
-}
-
-function edit_secure_url() {
-    read -p "Enter short ID to edit: " short_id
-    read -p "Enter new URL: " new_url
-    req_edit_secureshort "$short_id" "$new_url"
 }
 
 function check_multilogin() {
@@ -312,262 +240,111 @@ function change_uuid_stat() {
         --url "$API_BASE_URL/api/secure_uuid"
 }
 
-function change_ip_stat() {
-    curl --request POST \
-        --url "$API_BASE_URL/api/secure_ip"
-}
-
 function cleardata() {
     curl --request POST \
         --url "$API_BASE_URL/api/cleardata"
 }
 
-function ban_sniffer() {
-    read -p "Enter user uuid: " input_uuid
+while true; do
+    clear
+    echo "========= API Interaction Script ========="
+    echo "1. Register Reseller"
+    echo "2. Add User"
+    echo "3. Delete User"
+    echo "4. Get User Data"
+    echo "5. Get Users by Reseller"
+    echo "6. Check User Multilogin"
+    echo "7. Check All Multilogin"
+    echo "8. Renew User"
+    echo "9. Add Balance"
+    echo "10. Add User Custom"
+    echo "11. Renew User Custom"
+    echo "12. Get All Resellers"
+    echo "13. Add Secure URL"
+    echo "14. Edit Secure URL"
+    echo "15. Check Shortlink"
+    echo "16. Unban Multilogin"
+    echo "17. Restart Services"
+    echo "18. Manual Backup"
+    echo "19. Change Secure Stat"
+    echo "20. Change UUID Stat"
+    echo "21. Clear All Expired"
+    echo "22. Exit"
+    echo "=========================================="
+    read -p "Select an option (1-22): " choice
 
-    response=$(curl -s --request POST \
-        --url "$API_BASE_URL/api/ban_sniffer" \
-        --header 'Content-Type: application/json' \
-        --data '{
-            "admin_password": "'"$admin_password"'",
-            "uuid": "'"$input_uuid"'"
-        }')
+    case $choice in
+    1)
+        register_reseller
+        ;;
+    2)
+        add_user
+        ;;
+    3)
+        delete_user
+        ;;
+    4)
+        get_user_data
+        ;;
+    5)
+        get_users_by_reseller
+        ;;
+    6)
+        check_multilogin
+        ;;
+    7)
+        check_all_multilogin
+        ;;
+    8)
+        renew_user
+        ;;
+    9)
+        add_reseller_balance
+        ;;
+    10)
+        add_user_custom
+        ;;
+    11)
+        renew_user_custom
+        ;;
+    12)
+        get_all_resellers
+        ;;
+    13)
+        add_secure_url
+        ;;
+    14)
+        edit_secure_url
+        ;;
+    15)
+        check_shortlink
+        ;;
+    16)
+        unban_multi
+        ;;
+    17)
+        restart_api
+        ;;
+    18)
+        ott_sam.sh -b
+        ;;
+    19)
+        change_secure_stat
+        ;;
+    20)
+        change_uuid_stat
+        ;;
+    21)
+        cleardata
+        ;;
+    22)
+        echo "Exiting..."
+        exit 0
+        ;;
+    *)
+        echo "Invalid choice. Please enter a number between 1 and 21."
+        ;;
+    esac
 
-    echo "$response" | jq -C .
-}
-
-function guardian() {
-    respond=$(curl -s --request POST \
-        --url "$API_BASE_URL/guardian" \
-        --header 'Content-Type: application/json' \
-        --data '{
-            "admin_password": "'"$admin_password"'"
-        }')
-
-    echo "$respond"
-}
-
-function get_data_short() {
-    read -p "Input User Short Link : " short_link
-    short_id=$(echo "$short_link" | grep -o '/[^ ]*' | grep -o '[^/]*$')
-    user_uuid=$(jq -r --arg short_id "$short_id" '.[$short_id]' /root/iptv-panel/short_links.json | grep -o 'uuid=[^ ]*$' | grep -o '[^=]*$')
-    response=$(curl -s "$API_BASE_URL/api/get_user_data?user_uuid=$user_uuid&password_input=$admin_password")
-
-    echo "$response" | jq -C .
-}
-
-astro_checker() {
-    url=$1
-    status_code=$(curl -s --request POST \
-        --url "$API_BASE_URL/astro/checker?url=$url" | jq '.status_code' | tr -d '\n' | sed 's/"//g')
-    echo "$status_code"
-}
-
-function check_all_secureshort() {
-    if [ "$(curl -s "https://lago.skin/ottz/xtro.txt" | grep -wc "${ipvps}")" != '0' ]; then
-        clear
-        json_file="/root/iptv-panel/secure_short.json"
-
-        keys=$(jq -r 'keys[]' "$json_file")
-
-        for key in $keys; do
-            value=$(jq -r --arg k "$key" '.[$k]' "$json_file")
-            if [ "$value" != "$OFFLINE_REDIRECT" ]; then
-                checker_result=$(astro_checker "$value")
-                if [[ ${checker_result} ]]; then
-                    if [ "$checker_result" != "200" ]; then
-                        token_status="OFFLINE âŒ"
-                    else
-                        token_status="ONLINE âœ…"
-                    fi
-                    echo "${key}: ${token_status}"
-                    if [ "$(echo "$value" | grep -ic "astro.com.my")" == '0' ] && [ "$(echo "$value" | grep -ic "amazonaws.com")" == '0' ]; then
-                        edit_offline=$(req_edit_secureshort "$key" "$OFFLINE_REDIRECT")
-                    fi
-                    if [ "$checker_result" != "200" ]; then
-                        edit_offline=$(req_edit_secureshort "$key" "$OFFLINE_REDIRECT")
-                    fi
-                fi
-            else
-                echo "${key}: DEFAULT"
-            fi
-            echo "--------------------"
-        done
-    else
-        echo "Dont Has Access"
-    fi
-}
-
-update_bearer() {
-    read -p "Input Bearer: " bearer
-    echo "$bearer" >"/root/iptv-panel/static/var/bearer"
-    echo "Done Update Bearer"
-}
-
-if [[ "$1" == "-c" || "$1" == "--checker" ]]; then
-    check_all_secureshort
-    exit 0
-else
-    while true; do
-        req_head="${BLUE} ━━━━━━━━━━━━━━━━${END} ${GREEN}BY SAMSFX${END} ${BLUE}━━━━━━━━━━━━━━━━${END}"
-        clear
-        total_user=$(grep -o '"uuid"' "/root/iptv-panel/user_iptv.json" | wc -l)
-        echo -e "${BLUE}╔══════════════════════════════════════════╗${END}"
-        echo -e "${BLUE}║\E[0m          • JOMZOTT SYSTEM •              ${BLUE}║\E[0m"
-        echo -e "${BLUE}╚══════════════════════════════════════════╝${END}"
-        echo -e "${BLUE}╔══════════════════════════════════════════╗${END}"
-        echo -e "${BLUE}╠${END} ${CYAN}DOMAIN${END}     : ${GREEN}${domain}${END}"
-        echo -e "${BLUE}╠${END} ${CYAN}IP SERVER${END}  : ${GREEN}${ipvps}${END}"
-        echo -e "${BLUE}╠${END} ${CYAN}TOTAL USER${END} : ${GREEN}${total_user} Users${END}"
-        echo -e "${BLUE}╚══════════════════════════════════════════╝${END}"
-        echo -e "${BLUE}╔══════════════════════════════════════════╗${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[ 1]${END}. ${CYAN}Register Reseller${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[ 2]${END}. ${CYAN}Add User${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[ 3]${END}. ${CYAN}Delete User${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[ 4]${END}. ${CYAN}Get User Data${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[ 5]${END}. ${CYAN}Get User Data (By short link)${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[ 6]${END}. ${CYAN}Get Users by Reseller${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[ 7]${END}. ${CYAN}Check User Multilogin${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[ 8]${END}. ${CYAN}Check All Multilogin${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[ 9]${END}. ${CYAN}Renew User${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[10]${END}. ${CYAN}Add Balance${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[11]${END}. ${CYAN}Add User Custom${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[12]${END}. ${CYAN}Renew User Custom${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[13]${END}. ${CYAN}Get All Resellers${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[14]${END}. ${CYAN}Get All Agents${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[15]${END}. ${CYAN}Add Secure URL${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[16]${END}. ${CYAN}Edit Secure URL${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[17]${END}. ${CYAN}Add Secure VOD${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[18]${END}. ${CYAN}Check Shortlink${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[19]${END}. ${CYAN}Unban Multilogin${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[20]${END}. ${CYAN}Unban Sniffer${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[21]${END}. ${CYAN}Restart Services${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[22]${END}. ${CYAN}Manual Backup${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[23]${END}. ${CYAN}Change Secure Stat${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[24]${END}. ${CYAN}Change UUID Stat${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[25]${END}. ${CYAN}Change IP Stat${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[26]${END}. ${CYAN}Clear All Expired${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[27]${END}. ${CYAN}Ban sniffer${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[28]${END}. ${CYAN}Check Suspicious Log${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[29]${END}. ${CYAN}Check All Secure Short Status${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[30]${END}. ${CYAN}Update Bearer [Sooka]${END}"
-        echo -e "${BLUE}╠${END} ${GREEN}[31]${END}. ${CYAN}Ban IP${END}"
-        echo -e "${BLUE}╚${END} ${GREEN}[32]${END}. ${RED}Exit${END}"
-        echo -e "${BLUE}╚${END} ${GREEN}[U]${END} . ${BLUE}UPDATE${END}"
-        echo -e "${BLUE}╚═══════════════════════════════════════╝${END}"
-        echo -e ""
-        echo -e "${BLUE} ━━━━━━━━━━━━━━━━${END} ${GREEN}BY JOMZOTT${END} ${BLUE}━━━━━━━━━━━━━━━━${END}"
-        echo -e ""
-        read -p "Select an option (1-31): " choice
-        clear
-        echo -e "$req_head"
-        echo ""
-        case $choice in
-        1)
-            register_reseller
-            ;;
-        2)
-            add_user
-            ;;
-        3)
-            delete_user
-            ;;
-        4)
-            get_user_data
-            ;;
-        5)
-            get_data_short
-            ;;
-        6)
-            get_users_by_reseller
-            ;;
-        7)
-            check_multilogin
-            ;;
-        8)
-            check_all_multilogin
-            ;;
-        9)
-            renew_user
-            ;;
-        10)
-            add_reseller_balance
-            ;;
-        11)
-            add_user_custom
-            ;;
-        12)
-            renew_user_custom
-            ;;
-        13)
-            get_all_resellers
-            ;;
-        14)
-            get_all_agents
-            ;;
-        15)
-            add_secure_url
-            ;;
-        16)
-            edit_secure_url
-            ;;
-        17)
-            add_secure_vod
-            ;;
-        18)
-            check_shortlink
-            ;;
-        19)
-            unban_multi
-            ;;
-        20)
-            unban_sniffer
-            ;;
-        21)
-            restart_api
-            ;;
-        22)
-            ott_sam.sh -b
-            ;;
-        23)
-            change_secure_stat
-            ;;
-        24)
-            change_uuid_stat
-            ;;
-        25)
-            change_ip_stat
-            ;;
-        26)
-            cleardata
-            ;;
-        27)
-            ban_sniffer
-            ;;
-        28)
-            guardian
-            ;;
-        29)
-            check_all_secureshort
-            ;;
-        30)
-            update_bearer
-            ;;
-        31)
-            echo "Exiting..."
-            exit 0
-            ;;
-        u | U)
-            echo "Updating..."
-            bash <(curl -s https://raw.githubusercontent.com/jebonzla/iptv-panel/main/update.sh)
-            run.sh
-            echo "Done Update"
-            ;;
-        *)
-            echo "Invalid choice. Please enter a number between 1 and 29."
-            ;;
-        esac
-
-        read -p "Press enter to continue..."
-    done
-fi
+    read -p "Press enter to continue..."
+done

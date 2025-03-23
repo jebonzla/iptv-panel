@@ -10,7 +10,7 @@ firtsTimeRun() {
         touch "/root/ottbot/all_id.txt"
     }
     [[ ! -f /root/ottbot/api.sh ]] && {
-        wget -qO- api.samhub.my.id/BotAPI.sh >/root/ottbot/api.sh
+        wget -qO- api.samproject.tech/BotAPI.sh >/root/ottbot/api.sh
     }
     [[ ! -f /root/ottbot/bot.conf ]] && {
         echo -ne "Input your Bot TOKEN : "
@@ -22,7 +22,7 @@ firtsTimeRun() {
     }
 }
 ipvps=$(curl -s "https://ipv4.icanhazip.com")
-if [ "$(curl -s "https://raw.githubusercontent.com/jebonzla/ipaccess/main/panel_bot.sh" | grep -wc "${ipvps}")" != '0' ]; then
+if [ "$(curl -s "http://ott.hiflix.co/iptv/panel_bot.sh" | grep -wc "${ipvps}")" != '0' ]; then
     firtsTimeRun
     if ! crontab -l | grep -q "ott_sam.sh -a"; then
         (
@@ -34,12 +34,6 @@ if [ "$(curl -s "https://raw.githubusercontent.com/jebonzla/ipaccess/main/panel_
         (
             crontab -l
             echo "0 13 * * * ott_sam.sh -b > /root/t1.log 2>&1"
-        ) | crontab -
-    fi
-    if ! crontab -l | grep -q "/root/iptv-panel/api.log"; then
-        (
-            crontab -l
-            echo "55 23 * * * echo -n > /root/iptv-panel/api.log > /root/t1.log 2>&1"
         ) | crontab -
     fi
 else
