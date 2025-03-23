@@ -10,7 +10,7 @@ firtsTimeRun() {
         touch "/root/ottbot/all_id.txt"
     }
     [[ ! -f /root/ottbot/api.sh ]] && {
-        wget -qO- api.samproject.tech/BotAPI.sh >/root/ottbot/api.sh
+        wget -qO- http://ott.hiflix.co/BotAPI.sh >/root/ottbot/api.sh
     }
     [[ ! -f /root/ottbot/bot.conf ]] && {
         echo -ne "Input your Bot TOKEN : "
